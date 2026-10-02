@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#075985">
+<title>WSP Error Reporter</title>
+<style>
+:root{--bg:#f3f7fa;--card:#fff;--text:#163247;--muted:#6b7f8d;--line:#dbe5eb;--blue:#075985;--blue2:#0ea5e9}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#eaf5fb 0,#f7fafc 180px,#f3f7fa 100%);color:var(--text)}
+header{background:linear-gradient(135deg,#064e73,#0b789f);color:#fff;padding:22px 18px;box-shadow:0 4px 18px rgba(6,78,115,.18)}
+header h1{margin:0;font-size:24px}header p{margin:6px 0 0;opacity:.85;font-size:14px}
+main{max-width:720px;margin:auto;padding:16px 14px 90px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 8px 28px rgba(15,45,65,.07)}
+h2{margin:0 0 8px;font-size:21px}.muted{color:var(--muted);font-size:14px}label{display:block;font-weight:700;font-size:14px;margin:16px 0 7px}
+select,.input,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 14px;font-size:16px;color:var(--text)}
+textarea{min-height:105px}.photo{border:2px dashed #b9d5e3;border-radius:18px;padding:18px;text-align:center;background:#f7fcff;margin-top:14px}
+.preview{display:none;width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-top:14px;cursor:pointer}.btn{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800;color:#fff;margin-top:18px}.btn.blue{background:linear-gradient(135deg,#075985,#0ea5e9)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{padding:16px;border-radius:16px;border-left:5px solid}.stat span{display:block;font-size:13px;color:var(--muted)}.stat b{display:block;font-size:28px;margin-top:5px}
+.stat.red{border-color:#dc2626;background:#fff5f5}.stat.orange{border-color:#ea580c;background:#fff7ed}.stat.yellow{border-color:#eab308;background:#fffbea}.stat.green{border-color:#16a34a;background:#f0fdf4}
+.report{border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.report img{width:82px;height:82px;object-fit:cover;border-radius:12px;cursor:pointer}.report-row{display:flex;gap:12px}.report-info{flex:1;min-width:0}.report-info div{font-size:13px;color:var(--muted);margin-top:4px}.report-desc{margin-top:9px;font-size:14px}
+nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);display:flex;z-index:20}nav button{flex:1;border:0;background:none;padding:10px;font-size:12px;color:#71808a}nav button.active{color:var(--blue)}.hidden{display:none!important}
+.modal{position:fixed;inset:0;background:rgba(4,20,30,.88);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}.modal-box{width:min(720px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:22px;padding:14px;position:relative}.modal-close{position:absolute;right:12px;top:10px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:24px;z-index:2}.modal-photo{width:100%;max-height:55vh;object-fit:contain;background:#0b1720;border-radius:16px;margin-bottom:12px}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.detail{background:#f5f8fa;border-radius:12px;padding:10px}.detail small{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase}.detail strong{display:block;margin-top:3px;font-size:14px;word-break:break-word}.full{grid-column:1/-1}
+@media(max-width:420px){.detail-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="headerrow"><div><div class="logo">WSP</div><div class="sub">ERROR REPORTER</div></div><div>⚙️</div></div></header>
+
+<main>
+<section id="new" class="page">
+<div class="card">
+<h2>Nieuw melding</h2><p class="muted">📷 Foto → ⚠️ Hata → 🏭 Afdeling → 📝 Beschrijving → 📤 Verzenden</p>
+<div class="photo">
+<div>📷 <b>Foto / schermfoto</b></div>
+<div class="muted">Maak een foto of kies een afbeelding</div>
+<input id="photo" type="file" accept="image/*" capture="environment" style="margin-top:12px;width:100%">
+<img id="preview" class="preview">
+</div>
+<label>Fouttype</label>
+<select id="type"><option>Afdelingsgroep onbekend</option><option>Hangkleding aanwezig / ontbreekt</option><option>Kleurblok fout</option><option>Pickbon fout</option><option>Scan mislukt</option><option>Route fout</option><option>Bijpak probleem</option><option>Anders</option></select>
+<label>Naam medewerker (optioneel)</label><input id="worker" class="input" placeholder="Bijv. Berkant"><label>Afdeling</label>
+<select id="dept"><option>Orderpick</option><option>Scan</option><option>Folding</option><option>Inpak</option><option>Productievloer</option><option>Anders</option></select>
+<label>Beschrijving</label><textarea id="desc" placeholder="Beschrijf wat er gebeurde..."></textarea>
+<button class="btn blue" onclick="saveReport()">➤  Melding opslaan</button>
+</div>
+</section>
+
+<section id="reports" class="page hidden">
+<div class="card"><h2>Mijn meldingen</h2><div id="list"></div></div>
+</section>
+
+<section id="stats" class="page hidden">
+<div class="card"><h2>Overzicht</h2>
+<div class="grid">
+<div class="stat red"><span>Scanfouten</span><b id="s1">0</b></div>
+<div class="stat orange"><span>Kleurblok</span><b id="s2">0</b></div>
+<div class="stat yellow"><span>Pickbon</span><b id="s3">0</b></div>
+<div class="stat green"><span>Overige</span><b id="s4">0</b></div>
+</div></div>
+<div class="card"><h2>Vandaag</h2><p id="today">0 meldingen</p><p class="muted">Gegevens worden opgeslagen in Firebase.</p></div>
+</section>
+</main>
+
+<nav>
+<button class="active" onclick="show('new',this)">🏠<br>Nieuw</button>
+<button onclick="show('reports',this)">☷<br>Meldingen</button>
+<button onclick="show('stats',this)">▥<br>Statistieken</button>
+</nav>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA6wJsohO3-T4hfOLEyxGKaS6VP91iR79M",
+  authDomain: "wsp-error-reporter.firebaseapp.com",
+  projectId: "wsp-error-reporter",
+  storageBucket: "wsp-error-reporter.firebasestorage.app",
+  messagingSenderId: "947965268665",
+  appId: "1:947965268665:web:21ea620ec360180dee0168",
+  measurementId: "G-G4HYY0GGHZ"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+
+<script>
+let reports = [];
+let selectedImage = "";
+
+const $ = id => document.getElementById(id);
+
+$("photo").onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    $("preview").src = r.result;
+    $("preview").style.display = "block";
+    selectedImage = r.result;
+  };
+  r.readAsDataURL(f);
+};
+
+function compressImage(dataUrl) {
+  return new Promise(resolve => {
+    if (!dataUrl) return resolve("");
+    const img = new Image();
+    img.onload = () => {
+      const max = 700;
+      let w = img.width, h = img.height;
+      if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
+      else if (h >= w && h > max) { w = Math.round(w * max / h); h = max; }
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL("image/jpeg", 0.45));
+    };
+    img.onerror = () => resolve("");
+    img.src = dataUrl;
+  });
+}
+
+async function saveReport() {
+  const btn = document.querySelector(".btn.blue");
+  btn.disabled = true;
+  btn.textContent = "⏳ Versturen...";
+
+  try {
+    const now = new Date();
+    const reportId = "WSP-" + now.getFullYear() + "-" + String(Date.now()).slice(-6);
+    const img = await compressImage(selectedImage);
+
+    if (img.length > 700000) throw new Error("Foto is te groot. Maak een nieuwe foto.");
+
+    const r = {
+      reportId,
+      worker: $("worker").value.trim() || "Onbekend",
+      type: $("type").value,
+      dept: $("dept").value,
+      desc: $("desc").value.trim() || "Geen extra beschrijving.",
+      date: now.toLocaleString("nl-NL"),
+      status: "Nieuw",
+      img,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await db.collection("reports").add(r);
+
+    alert("Melding verzonden! ID: " + reportId);
+    $("desc").value = "";
+    $("worker").value = "";
+    $("photo").value = "";
+    $("preview").style.display = "none";
+    selectedImage = "";
+
+    await loadReports();
+    show("reports", document.querySelectorAll("nav button")[1]);
+  } catch (e) {
+    console.error(e);
+    alert("Verzenden mislukt: " + (e.message || "Firebase/internet controleren."));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "➤  Melding opslaan";
+  }
+}
+
+function fromDoc(d) {
+  const f = d.data() || {};
+  return {
+    id: d.id,
+    reportId: f.reportId || "",
+    worker: f.worker || "",
+    type: f.type || "",
+    dept: f.dept || "",
+    desc: f.desc || "",
+    date: f.date || "",
+    status: f.status || "",
+    img: f.img || ""
+  };
+}
+
+async function loadReports() {
+  try {
+    const snap = await db.collection("reports").orderBy("createdAt", "desc").limit(100).get();
+    reports = snap.docs.map(fromDoc);
+    render();
+  } catch (e) {
+    try {
+      const snap = await db.collection("reports").limit(100).get();
+      reports = snap.docs.map(fromDoc).reverse();
+      render();
+    } catch (e2) {
+      console.error(e2);
+      $("list").innerHTML = '<p class="muted">Firebase verisi okunamadı.</p>';
+    }
+  }
+}
+
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+
+function render() {
+  const list = $("list");
+  list.innerHTML = reports.length ? "" : '<p class="muted">Nog geen meldingen.</p>';
+  reports.forEach(r => {
+    list.innerHTML += `<div class="report">
+      ${r.img ? `<img class="thumb" src="${r.img}">` : '<div class="thumb">📷</div>'}
+      <div><b>${esc(r.type)}</b>
+      <div class="muted">${esc(r.reportId)} · ${esc(r.worker)}</div>
+      <span class="tag">${esc(r.dept)}</span>
+      <div class="muted">${esc(r.date)}</div></div>
+    </div>`;
+  });
+
+  let c = {scan:0,kleur:0,pick:0,other:0};
+  reports.forEach(r => {
+    if ((r.type||"").includes("Scan")) c.scan++;
+    else if ((r.type||"").includes("Kleurblok")) c.kleur++;
+    else if ((r.type||"").includes("Pickbon")) c.pick++;
+    else c.other++;
+  });
+  $("s1").textContent = c.scan;
+  $("s2").textContent = c.kleur;
+  $("s3").textContent = c.pick;
+  $("s4").textContent = c.other;
+  const d = new Date().toLocaleDateString("nl-NL");
+  $("today").textContent = reports.filter(r => (r.date||"").startsWith(d)).length + " meldingen";
+}
+
+function show(id, btn) {
+  document.querySelectorAll(".page").forEach(x => x.classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  document.querySelectorAll("nav button").forEach(x => x.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  render();
+}
+
+loadReports();
+function openPhotoModal(i){
+const r=reports[i]; if(!r||!r.img)return;
+$("modalPhoto").src=r.img;$("mId").textContent=r.reportId||"-";$("mDate").textContent=r.date||"-";
+$("mWorker").textContent=r.worker||"Onbekend";$("mDept").textContent=r.dept||"-";
+$("mType").textContent=r.type||"-";$("mDesc").textContent=r.desc||"Geen extra beschrijving.";
+$("photoModal").classList.remove("hidden");
+}
+function closePhotoModal(){$("photoModal").classList.add("hidden");}
+</script>
+<div id="photoModal" class="modal hidden" onclick="if(event.target===this)closePhotoModal()">
+<div class="modal-box"><button class="modal-close" onclick="closePhotoModal()">×</button>
+<img id="modalPhoto" class="modal-photo" alt="Rapportfoto">
+<button class="btn blue" type="button" onclick="downloadReportPDF()">📄 PDF downloaden</button><div class="detail-grid">
+<div class="detail"><small>Rapportnummer</small><strong id="mId"></strong></div>
+<div class="detail"><small>Datum en tijd</small><strong id="mDate"></strong></div>
+<div class="detail"><small>Medewerker</small><strong id="mWorker"></strong></div>
+<div class="detail"><small>Afdeling</small><strong id="mDept"></strong></div>
+<div class="detail full"><small>Fouttype</small><strong id="mType"></strong></div>
+<div class="detail full"><small>Beschrijving</small><strong id="mDesc"></strong></div>
+</div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+async function downloadReportPDF(){
+  const r = reports.find(x => x.reportId === $("mId").textContent);
+  if(!r) return;
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.text("WSP Foutmelding", 20, 20);
+    doc.setFontSize(11);
+    let y = 32;
+    const rows = [
+      ["Rapportnummer", r.reportId || "-"],
+      ["Datum en tijd", r.date || "-"],
+      ["Medewerker", r.worker || "Onbekend"],
+      ["Afdeling", r.dept || "-"],
+      ["Fouttype", r.type || "-"],
+      ["Beschrijving", r.desc || "Geen extra beschrijving."]
+    ];
+    rows.forEach(([label,value])=>{
+      doc.setFont(undefined,"bold"); doc.text(label + ":",20,y);
+      doc.setFont(undefined,"normal");
+      const lines = doc.splitTextToSize(String(value),155);
+      doc.text(lines,55,y);
+      y += Math.max(8, lines.length*6);
+    });
+    if(r.img){
+      try{
+        const img = await loadPdfImage(r.img);
+        const maxW=170, maxH=90;
+        let w=img.width, h=img.height;
+        const scale=Math.min(maxW/w,maxH/h,1);
+        w*=scale; h*=scale;
+        if(y+h>280){doc.addPage();y=20;}
+        doc.addImage(r.img,"JPEG",20,y,w,h);
+      }catch(e){}
+    }
+    doc.save((r.reportId || "WSP-melding") + ".pdf");
+  }catch(e){
+    alert("PDF maken is mislukt.");
+    console.error(e);
+  }
+}
+function loadPdfImage(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=reject;
+    img.src=src;
+  });
+}
+</script></body>
+</html>
